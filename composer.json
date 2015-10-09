@@ -1,0 +1,19 @@
+{
+    "name": "lanlin/abstract-swoole",
+    "keywords": ["Swoole Codeigniter Abstract"],
+    "description": "A swoole abstract server & client class for codeigniter 3",
+    "license": "MIT",
+    "version": "1.0.0",
+    "authors":
+    [
+        {
+            "name": "Lanlin",
+            "email": "lanlin1987@gmail.com"
+        }
+    ],
+    "require": { "php": ">=5.4.0" },
+    "autoload":
+    {
+        "psr-0": { "Abstract_Swoole\\": "src/" }
+    }
+}
