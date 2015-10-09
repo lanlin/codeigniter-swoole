@@ -3,7 +3,6 @@
     "keywords": ["Swoole Codeigniter Abstract"],
     "description": "A swoole abstract server & client class for codeigniter 3",
     "license": "MIT",
-    "version": "1.0.0",
     "authors":
     [
         {
