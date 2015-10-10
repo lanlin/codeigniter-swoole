@@ -22,7 +22,7 @@ final class Server
 
     const HOST = '127.0.0.1';
     const PORT = '9999';
-    const EOFF = '【@=_=@】';
+    const EOFF = '☯';  // \u262F
 
     // ------------------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ final class Server
      */
     public function on_connect(\swoole_server $serv, $fd)
     {
-        echo "Client:Connect.\n";
+        // @TODO
     }
 
     // ------------------------------------------------------------------------------
@@ -90,7 +90,14 @@ final class Server
      */
     public function on_receive(\swoole_server $serv, $fd, $from_id, $data)
     {
-        $serv->send($fd, 'Swoole: '.$data);
+        $fp = fopen(FCPATH.'a.txt', 'a+b');
+        fwrite($fp, $data);
+        fclose($fp);
+
+        $data  = str_replace(self::EOFF, '', $data);
+        $data .= self::EOFF;
+
+        $serv->send($fd, $data);
         $serv->close($fd);
     }
 
@@ -104,7 +111,7 @@ final class Server
      */
     public function on_close(\swoole_server $serv, $fd)
     {
-        echo "Client: Close.\n";
+        // @TODO
     }
 
     // ------------------------------------------------------------------------------

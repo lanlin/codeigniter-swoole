@@ -22,7 +22,7 @@ abstract class Client
 
     const HOST = '127.0.0.1';
     const PORT = '9999';
-    const EOFF = '【@=_=@】';
+    const EOFF = '☯';  // \u262F
 
     // ------------------------------------------------------------------------------
 
@@ -37,7 +37,10 @@ abstract class Client
      */
     public static function client()
     {
-        $client = new \swoole_client(SWOOLE_SOCK_TCP, SWOOLE_SOCK_SYNC);
+        $post   = static::$post;
+        $return = FALSE;
+
+        $client = new \swoole_client(SWOOLE_SOCK_TCP);
 
         // set eof charactor
         $client->set(
@@ -53,18 +56,30 @@ abstract class Client
         $client->on('close',   'static::on_close');
 
         // filter data
-        $post = is_array( static::$post) ?   static::$post : serialize(static::$post);
-        $post = str_replace(self::EOFF,  '', $post);
+        $post = is_array($post) ? serialize($post) : $post;
+        $post = str_replace(self::EOFF, '', $post);
+        $post = $post.self::EOFF;
+
+        // connect
+        $client->connect(self::HOST, self::PORT);
 
         // send data
-        $client->connect(self::HOST, self::PORT);
-        $client->send($post);
+        if($client->isConnected())
+        {
+            $issend = $client->send($post);
+        }
 
         // receiv data
-        $back = $client->recv();
-        $client->close();
+        if(isset($issend) && $issend)
+        {
+            $return = $client->recv();
+            $return = str_replace(self::EOFF, '', $return);
 
-        return $back;
+            $client->close();
+            unset($client);
+        }
+
+        return $return;
     }
 
     // ------------------------------------------------------------------------------
@@ -76,7 +91,7 @@ abstract class Client
      */
     public static function on_connect(\swoole_client $cli)
     {
-        $cli->send("GET / HTTP/1.1\r\n\r\n");
+        // @TODO
     }
 
     // ------------------------------------------------------------------------------
@@ -89,9 +104,7 @@ abstract class Client
      */
     public static function on_receive(\swoole_client $cli, $data)
     {
-        echo "Receive: $data";
-        $cli->send(str_repeat('A', 100)."\n");
-        sleep(1);
+        // @TODO
     }
 
     // ------------------------------------------------------------------------------
@@ -103,7 +116,7 @@ abstract class Client
      */
     public static function on_close(\swoole_client $cli)
     {
-        echo "Connection close\n";
+        // @TODO
     }
 
     // ------------------------------------------------------------------------------
@@ -115,7 +128,7 @@ abstract class Client
      */
     public static function on_error(\swoole_client $cli)
     {
-        echo "error\n";
+        // @TODO
     }
 
     // ------------------------------------------------------------------------------
