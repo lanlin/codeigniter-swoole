@@ -1,6 +1,4 @@
-<?php
-
-namespace Abstract_Swoole;
+<?php namespace Abstract_Swoole;
 
 /**
  * ------------------------------------------------------------------------------------
@@ -50,10 +48,17 @@ final class Server
         // init config
         $serv->set(
         [
+            'max_conn'       => 256,         // max connection number
             'worker_num'     => 8,           // set workers
+            'dispatch_mode'  => 3,           // post to a free worker
             'daemonize'      => TRUE,        // using as daemonize?
+
+            'open_eof_check' => TRUE,
             'open_eof_split' => TRUE,
             'package_eof'    => self::EOFF,
+            'log_file'       => APPPATH.'logs/swoole.log',
+
+            'heartbeat_check_interval' => 30
         ]);
 
         // listen on
@@ -68,19 +73,6 @@ final class Server
     // ------------------------------------------------------------------------------
 
     /**
-     * listen on connect
-     *
-     * @param \swoole_server $serv
-     * @param $fd
-     */
-    public function on_connect(\swoole_server $serv, $fd)
-    {
-        // @TODO
-    }
-
-    // ------------------------------------------------------------------------------
-
-    /**
      * listen on receive data
      *
      * @param \swoole_server $serv
@@ -90,15 +82,59 @@ final class Server
      */
     public function on_receive(\swoole_server $serv, $fd, $from_id, $data)
     {
-        $fp = fopen(FCPATH.'a.txt', 'a+b');
-        fwrite($fp, $data);
-        fclose($fp);
+        // format passed
+        $back = 'FALSE';
+        $data = str_replace(self::EOFF, '', $data);
+        $data = unserialize($data);
 
-        $data  = str_replace(self::EOFF, '', $data);
-        $data .= self::EOFF;
+        // load specify models
+        if(!empty($data['model']) && !empty($data['method']))
+        {
+            $model = $alias = $data['model'];
 
-        $serv->send($fd, $data);
+            // Is the model in a sub-folder? If so, parse out the filename and path.
+            if (($last_slash = strrpos($alias, '/')) !== FALSE)
+            {
+                $alias = substr($alias, ++$last_slash);
+            }
+
+            // Is the model need set a alias name
+            $alias = !empty($data['rename']) ? $data['rename'] : $alias;
+
+            // load the model
+            $CI = &get_instance();
+            $CI->load->model($model, $alias);
+
+            // call specify model
+            $back = $CI->$alias->$data['method']($data['params']);
+        }
+
+        // dont send back
+        if(empty($data['return']) || $data['return'] === TRUE)
+        {
+            // format send back
+            $back  = serialize($back);
+            $back .= self::EOFF;
+
+            // send to client
+            $serv->send($fd, $back);
+        }
+
+        // close connect
         $serv->close($fd);
+    }
+
+    // ------------------------------------------------------------------------------
+
+    /**
+     * listen on connect
+     *
+     * @param \swoole_server $serv
+     * @param $fd
+     */
+    public function on_connect(\swoole_server $serv, $fd)
+    {
+        // @TODO
     }
 
     // ------------------------------------------------------------------------------

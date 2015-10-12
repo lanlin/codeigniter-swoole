@@ -1,7 +1,7 @@
 {
     "name": "lanlin/abstract-swoole",
-    "keywords": ["Swoole Codeigniter Abstract"],
-    "description": "A swoole abstract server & client class for codeigniter 3",
+    "keywords": ["Swoole Codeigniter Combind"],
+    "description": "Swoole + Codeigniter combind useage demo",
     "suggests": "Using this package within CodeIgniter 3",
     "license": "MIT",
     "authors":

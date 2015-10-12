@@ -1,6 +1,4 @@
-<?php
-
-namespace Abstract_Swoole;
+<?php namespace Abstract_Swoole;
 
 /**
  * ------------------------------------------------------------------------------------
@@ -26,7 +24,7 @@ abstract class Client
 
     // ------------------------------------------------------------------------------
 
-    public static $post = '';
+    public static $post = [];
 
     // ------------------------------------------------------------------------------
 
@@ -37,9 +35,7 @@ abstract class Client
      */
     public static function client()
     {
-        $post   = static::$post;
         $return = FALSE;
-
         $client = new \swoole_client(SWOOLE_SOCK_TCP);
 
         // set eof charactor
@@ -55,17 +51,14 @@ abstract class Client
         $client->on('error',   'static::on_error');
         $client->on('close',   'static::on_close');
 
-        // filter data
-        $post = is_array($post) ? serialize($post) : $post;
-        $post = str_replace(self::EOFF, '', $post);
-        $post = $post.self::EOFF;
-
         // connect
         $client->connect(self::HOST, self::PORT);
 
         // send data
         if($client->isConnected())
         {
+            $post   = serialize(static::$post);
+            $post  .= self::EOFF;
             $issend = $client->send($post);
         }
 
@@ -74,6 +67,7 @@ abstract class Client
         {
             $return = $client->recv();
             $return = str_replace(self::EOFF, '', $return);
+            $return = unserialize($return);
 
             $client->close();
             unset($client);
