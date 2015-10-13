@@ -1,4 +1,4 @@
-<?php namespace Abstract_Swoole;
+<?php namespace CI_Swoole;
 
 /**
  * ------------------------------------------------------------------------------------
@@ -26,6 +26,8 @@ final class Server
 
     /**
      * check is cli
+     *
+     * @params
      */
     public function __construct()
     {
@@ -51,9 +53,9 @@ final class Server
         $serv->set(
         [
             'max_conn'        => 256,         // max connection number
-            'worker_num'      => 8,           // set workers
+            'worker_num'      => 1,           // set workers
             'dispatch_mode'   => 3,           // post to a free worker
-            'task_worker_num' => 8,           // worker numbers for task
+            'task_worker_num' => 1,           // worker numbers for task
 
             'daemonize'      => TRUE,         // using as daemonize?
             'open_eof_check' => TRUE,
@@ -87,6 +89,9 @@ final class Server
      */
     public function on_receive(\swoole_server $serv, $fd, $from_id, $data)
     {
+        var_dump($fd);
+        var_dump($serv->worker_id);
+
         // call model
         $back  = $this->_dispatch($serv, $data);
 
@@ -216,6 +221,10 @@ final class Server
             !empty($data['server']) && $data['server'] === TRUE ?
             $CI->$alias->$data['method']($data['params'], $serv) :
             $CI->$alias->$data['method']($data['params']);
+
+            // destroy obj
+            $CI->db->close();
+            unset($CI);
         }
 
         return $back;

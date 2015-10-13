@@ -5,10 +5,6 @@
  * Test2 Model
  * ----------------------------------------------------------------------------------
  *
- * \Abstract_Swoole\Client is a abstract class,
- * extends it, so you can overwrite some static methods if needed.
- * and using it with late static bindings.
- *
  * @author lanlin
  * @change 2015-10-11
  */

@@ -5,14 +5,14 @@
  * Custom2_Client
  * ----------------------------------------------------------------------------------
  *
- * \Abstract_Swoole\Client is a abstract class,
+ * \CI_Swoole\Client is a abstract class,
  * extends it, so you can overwrite some static methods if needed.
  * and using it with late static bindings.
  *
  * @author lanlin
  * @change 2015-10-11
  */
-class Custom2_Client extends \Abstract_Swoole\Client
+class Custom2_Client extends \CI_Swoole\Client
 {
 
     // ------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
-# abstract-swoole
+# CodeIgniter-Swoole
 
-Abstract-Swoole (You need using it within CodeIgniter)
+CodeIgniter-Swoole (You need using it within CodeIgniter)
 
 This simple package is combind with CodeIgniter.
 
@@ -8,7 +8,7 @@ So that we can use Swoole in a single CI framework.
 
 Normally we only want to start a single server side in CLI,
 
-but connect with multi client side. abstract-swoole is the one.
+but connect with multi client side. codeigniter-swoole is the one.
 
 Detail useage see the demo directory, if you formiliar with
 
@@ -20,7 +20,7 @@ aready, and of course CI required.
 
 ------------------------------------------------------------------------------
 
-CLI Commond:> cd <to your ci directory>
+CLI Commond:> cd "to your ci root directory"
 
 CLI Commond:> php index.php swoole start      // start server from swoole.php
 

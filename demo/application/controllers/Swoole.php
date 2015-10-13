@@ -34,7 +34,7 @@ class Swoole extends CI_Controller
      */
     public function start()
     {
-        $serv  = new \Abstract_Swoole\Server();
+        $serv  = new \CI_Swoole\Server();
         $start = $serv->start();
 
         echo "Start Server: {$start}\n";
@@ -47,13 +47,13 @@ class Swoole extends CI_Controller
      */
     public function stop()
     {
-        \Abstract_Swoole\Client::$post =
+        \CI_Swoole\Client::$post =
         [
             'return'   => TRUE,
             'shutdown' => TRUE
         ];
 
-        $stop = \Abstract_Swoole\Client::client();
+        $stop = \CI_Swoole\Client::client();
         echo "Stop Server: {$stop}\n";
     }
 
@@ -64,13 +64,13 @@ class Swoole extends CI_Controller
      */
     public function reload()
     {
-        \Abstract_Swoole\Client::$post =
+        \CI_Swoole\Client::$post =
         [
             'return' => TRUE,
             'reload' => TRUE
         ];
 
-        $reload = \Abstract_Swoole\Client::client();
+        $reload = \CI_Swoole\Client::client();
         echo "Reload Workers: {$reload}\n";
     }
 

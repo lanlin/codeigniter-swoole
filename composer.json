@@ -1,7 +1,7 @@
 {
-    "name": "lanlin/abstract-swoole",
+    "name": "lanlin/codeigniter-swoole",
     "keywords": ["Swoole Codeigniter Combind"],
-    "description": "Swoole + Codeigniter combind useage demo",
+    "description": "Simple package for use swoole under codeigniter.",
     "suggests": "Using this package within CodeIgniter 3",
     "license": "MIT",
     "authors":
@@ -15,6 +15,6 @@
     "require": { "php": ">=5.4.0" },
     "autoload":
     {
-        "psr-0": { "Abstract_Swoole\\": "src/" }
+        "psr-0": { "CI_Swoole\\": "src/" }
     }
 }
