@@ -36,6 +36,8 @@ final class Server
 
     /**
      * start a swoole server in cli
+     *
+     * @return mixed
      */
     public function start()
     {
@@ -48,11 +50,12 @@ final class Server
         // init config
         $serv->set(
         [
-            'max_conn'       => 256,         // max connection number
-            'worker_num'     => 8,           // set workers
-            'dispatch_mode'  => 3,           // post to a free worker
-            'daemonize'      => TRUE,        // using as daemonize?
+            'max_conn'        => 256,         // max connection number
+            'worker_num'      => 8,           // set workers
+            'dispatch_mode'   => 3,           // post to a free worker
+            'task_worker_num' => 8,           // worker numbers for task
 
+            'daemonize'      => TRUE,         // using as daemonize?
             'open_eof_check' => TRUE,
             'open_eof_split' => TRUE,
             'package_eof'    => self::EOFF,
@@ -64,10 +67,12 @@ final class Server
         // listen on
         $serv->on('connect', [$this, 'on_connect']);
         $serv->on('receive', [$this, 'on_receive']);
+        $serv->on('finish',  [$this, 'on_finish']);
         $serv->on('close',   [$this, 'on_close']);
+        $serv->on('task',    [$this, 'on_task']);
 
         // start server
-        $serv->start();
+        return $serv->start();
     }
 
     // ------------------------------------------------------------------------------
@@ -82,46 +87,42 @@ final class Server
      */
     public function on_receive(\swoole_server $serv, $fd, $from_id, $data)
     {
-        // format passed
-        $back = 'FALSE';
-        $data = str_replace(self::EOFF, '', $data);
-        $data = unserialize($data);
-
-        // load specify models
-        if(!empty($data['model']) && !empty($data['method']))
-        {
-            $model = $alias = $data['model'];
-
-            // Is the model in a sub-folder? If so, parse out the filename and path.
-            if (($last_slash = strrpos($alias, '/')) !== FALSE)
-            {
-                $alias = substr($alias, ++$last_slash);
-            }
-
-            // Is the model need set a alias name
-            $alias = !empty($data['rename']) ? $data['rename'] : $alias;
-
-            // load the model
-            $CI = &get_instance();
-            $CI->load->model($model, $alias);
-
-            // call specify model
-            $back = $CI->$alias->$data['method']($data['params']);
-        }
+        // call model
+        $back  = $this->_dispatch($serv, $data);
 
         // dont send back
         if(empty($data['return']) || $data['return'] === TRUE)
         {
-            // format send back
             $back  = serialize($back);
             $back .= self::EOFF;
-
-            // send to client
             $serv->send($fd, $back);
         }
 
         // close connect
         $serv->close($fd);
+    }
+
+    // ------------------------------------------------------------------------------
+
+    /**
+     * listen on task
+     *
+     * @param  $serv
+     * @param  $task_id
+     * @param  $from_id
+     * @param  $data
+     * @return string
+     */
+    public function on_task(\swoole_server $serv, $task_id, $from_id, $data)
+    {
+        $back['taskid'] = $task_id;
+        $back['fromid'] = $from_id;
+        $back['return'] = $this->_dispatch($serv, $data);
+
+        $back  = serialize($back);
+        $back .= self::EOFF;
+
+        return $back;
     }
 
     // ------------------------------------------------------------------------------
@@ -148,6 +149,102 @@ final class Server
     public function on_close(\swoole_server $serv, $fd)
     {
         // @TODO
+    }
+
+    // ------------------------------------------------------------------------------
+
+    /**
+     * listen on task finish
+     *
+     * @param \swoole_server $serv
+     * @param $task_id
+     * @param $data
+     */
+    public function on_finish(\swoole_server $serv, $task_id, $data)
+    {
+        // @TODO
+    }
+
+    // ------------------------------------------------------------------------------
+
+    /**
+     * dispatch signal
+     *
+     * @param  \swoole_server $serv
+     * @param  $data
+     * @return string
+     */
+    protected function _dispatch(\swoole_server $serv, $data)
+    {
+          // format passed
+        $back = 'FALSE';
+        $data = str_replace(self::EOFF, '', $data);
+        $data = unserialize($data);
+
+        // check is signal for server shutdown
+        if(!empty($data['shutdown']) && $data['shutdown'] === TRUE)
+        {
+            return $this->_shutdown($serv);
+        }
+
+        // check is signal for workers reload
+        if(!empty($data['reload']) && $data['reload'] === TRUE)
+        {
+            return $this->_reload($serv);
+        }
+
+        // load specify models
+        if(!empty($data['model']) && !empty($data['method']))
+        {
+            $model = $alias = $data['model'];
+
+            // Is the model in a sub-folder? If so, parse out the filename and path.
+            if (($last_slash = strrpos($alias, '/')) !== FALSE)
+            {
+                $alias = substr($alias, ++$last_slash);
+            }
+
+            // Is the model need set a alias name
+            $alias = !empty($data['rename']) ? $data['rename'] : $alias;
+
+            // load the model
+            $CI = &get_instance();
+            $CI->load->model($model, $alias);
+
+            // call specify model
+            $back =
+            !empty($data['server']) && $data['server'] === TRUE ?
+            $CI->$alias->$data['method']($data['params'], $serv) :
+            $CI->$alias->$data['method']($data['params']);
+        }
+
+        return $back;
+    }
+
+    // ------------------------------------------------------------------------------
+
+    /**
+     * stop swoole server
+     *
+     * @param  \swoole_server $serv
+     * @return mixed
+     */
+    protected function _shutdown(\swoole_server $serv)
+    {
+        return $serv->shutdown();
+    }
+
+    // ------------------------------------------------------------------------------
+
+    /**
+     * reload swoole server
+     *
+     * @param  \swoole_server $serv
+     * @return mixed
+     */
+    protected function _reload(\swoole_server $serv)
+    {
+        return $serv->reload();
     }
 
     // ------------------------------------------------------------------------------

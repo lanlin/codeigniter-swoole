@@ -1,6 +1,6 @@
 # abstract-swoole
 
-Abstract-Swoole
+Abstract-Swoole (You need using it within CodeIgniter)
 
 This simple package is combind with CodeIgniter.
 
@@ -21,7 +21,12 @@ aready, and of course CI required.
 ------------------------------------------------------------------------------
 
 CLI Commond:> cd <to your ci directory>
-CLI Commond:> php index.php swoole start
+
+CLI Commond:> php index.php swoole start      // start server from swoole.php
+
+CLI Commond:> php index.php swoole stop       // stop server
+
+CLI Commond:> php index.php swoole reload     // reload all workers
 
 ------------------------------------------------------------------------------
 

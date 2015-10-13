@@ -24,7 +24,25 @@ abstract class Client
 
     // ------------------------------------------------------------------------------
 
-    public static $post = [];
+    /**
+     * Datas that will be send to server
+     *
+     * @var  array
+     * @tips server, reload, shutdown is options,
+     *       others must be set.
+     */
+    public static $post =
+    [
+        'return'   => TRUE,                  // if need return data
+        'server'   => TRUE,                  // if need pass serv object to your model
+        'reload'   => TRUE,                  // if need reload all workers
+        'shutdown' => TRUE,                  // if need shutdown server
+
+        'params'   => [],                    // params will be passed to your method
+        'method'   => 'test',                // the method will be call
+        'rename'   => 'tt',                  // rename the model object
+        'model'    => 'test/test_model'      // the model will be call
+    ];
 
     // ------------------------------------------------------------------------------
 
@@ -52,7 +70,7 @@ abstract class Client
         $client->on('close',   'static::on_close');
 
         // connect
-        $client->connect(self::HOST, self::PORT);
+        $client->connect(self::HOST, self::PORT, 10);
 
         // send data
         if($client->isConnected())

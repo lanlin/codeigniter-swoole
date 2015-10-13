@@ -13,6 +13,10 @@ class Swoole extends CI_Controller
 
     // ------------------------------------------------------------------------------
 
+    public $serv;
+
+    // ------------------------------------------------------------------------------
+
     /**
      * check is cli
      */
@@ -26,14 +30,48 @@ class Swoole extends CI_Controller
     // ------------------------------------------------------------------------------
 
     /**
-     * start swoole server through this method
-     *
-     * CLI command: php index.php swoole start
+     * start swoole server
      */
     public function start()
     {
-        $serv = new \Abstract_Swoole\Server();
-        $serv->start();
+        $serv  = new \Abstract_Swoole\Server();
+        $start = $serv->start();
+
+        echo "Start Server: {$start}\n";
+    }
+
+    // ------------------------------------------------------------------------------
+
+    /**
+     * stop swoole server
+     */
+    public function stop()
+    {
+        \Abstract_Swoole\Client::$post =
+        [
+            'return'   => TRUE,
+            'shutdown' => TRUE
+        ];
+
+        $stop = \Abstract_Swoole\Client::client();
+        echo "Stop Server: {$stop}\n";
+    }
+
+    // ------------------------------------------------------------------------------
+
+    /**
+     * reload swoole workers
+     */
+    public function reload()
+    {
+        \Abstract_Swoole\Client::$post =
+        [
+            'return' => TRUE,
+            'reload' => TRUE
+        ];
+
+        $reload = \Abstract_Swoole\Client::client();
+        echo "Reload Workers: {$reload}\n";
     }
 
     // ------------------------------------------------------------------------------
