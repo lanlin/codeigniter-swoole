@@ -13,6 +13,7 @@
     ],
     "minimum-stability": "dev",
     "require": { "php": ">=5.4.0" },
+    "replace": { "lanlin/abstract-swoole": "self.version" },
     "autoload":
     {
         "psr-0": { "CI_Swoole\\": "src/" }
