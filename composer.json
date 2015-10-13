@@ -1,5 +1,5 @@
 {
-    "name": "codeigniter-swoole",
+    "name": "lanlin/codeigniter-swoole",
     "keywords": ["Swoole Codeigniter Combind"],
     "description": "Simple package for use swoole under codeigniter.",
     "suggests": "Using this package within CodeIgniter 3",
