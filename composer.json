@@ -1,19 +1,12 @@
 {
-    "name": "lanlin/codeigniter-swoole",
+    "name": "codeigniter-swoole",
     "keywords": ["Swoole Codeigniter Combind"],
     "description": "Simple package for use swoole under codeigniter.",
     "suggests": "Using this package within CodeIgniter 3",
     "license": "MIT",
-    "authors":
-    [
-        {
-            "name": "Lanlin",
-            "email": "lanlin1987@gmail.com"
-        }
-    ],
+    "authors": [ { "name": "Lanlin", "email": "lanlin1987@gmail.com" } ],
     "minimum-stability": "dev",
     "require": { "php": ">=5.4.0" },
-    "replace": { "lanlin/abstract-swoole": "self.version" },
     "autoload":
     {
         "psr-0": { "CI_Swoole\\": "src/" }
