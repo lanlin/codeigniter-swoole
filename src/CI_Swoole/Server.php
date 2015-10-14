@@ -103,16 +103,18 @@ final class Server
             $send = !empty($data['shutdown']) ?
             $this->serv->shutdown() : $this->serv->reload();
 
-            $send = serialize($send).self::EOFF;
-            $ends = $this->serv->send($fd, $send);
+            $send  = serialize($send);
+            $send .= self::EOFF;
+            $ends  = $this->serv->send($fd, $send);
 
             if($ends) { $this->serv->close(); }
             return;
         }
 
         // now post data to a task
-        $param = ['fd' => $fd, 'data' => $data];
-        $param = serialize($param).self::EOFF;
+        $param  = ['fd' => $fd, 'data' => $data];
+        $param  = serialize($param);
+        $param .= self::EOFF;
 
         $this->serv->task($param);
         return;
