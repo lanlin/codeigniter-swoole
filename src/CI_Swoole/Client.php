@@ -86,10 +86,10 @@ class Client
             $return = $client->recv();
             $return = str_replace(self::EOFF, '', $return);
             $return = unserialize($return);
-
-            $client->close();
-            unset($client);
         }
+
+        $client->close();
+        unset($client);
 
         return $return;
     }
@@ -104,6 +104,7 @@ class Client
     public static function on_connect(\swoole_client $cli)
     {
         // @TODO
+        return;
     }
 
     // ------------------------------------------------------------------------------
@@ -117,6 +118,7 @@ class Client
     public static function on_receive(\swoole_client $cli, $data)
     {
         // @TODO
+        return;
     }
 
     // ------------------------------------------------------------------------------
@@ -129,6 +131,7 @@ class Client
     public static function on_close(\swoole_client $cli)
     {
         // @TODO
+        return;
     }
 
     // ------------------------------------------------------------------------------
@@ -141,6 +144,7 @@ class Client
     public static function on_error(\swoole_client $cli)
     {
         // @TODO
+        return;
     }
 
     // ------------------------------------------------------------------------------

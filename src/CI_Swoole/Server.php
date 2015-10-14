@@ -24,6 +24,10 @@ final class Server
 
     // ------------------------------------------------------------------------------
 
+    private $serv;
+
+    // ------------------------------------------------------------------------------
+
     /**
      * check is cli
      *
@@ -44,13 +48,13 @@ final class Server
     public function start()
     {
         // new swoole server
-        $serv = new \swoole_server(
+        $this->serv = new \swoole_server(
             self::HOST,     self::PORT,
             SWOOLE_PROCESS, SWOOLE_SOCK_TCP
         );
 
         // init config
-        $serv->set(
+        $this->serv->set(
         [
             'max_conn'        => 256,         // max connection number
             'worker_num'      => 1,           // set workers
@@ -67,14 +71,14 @@ final class Server
         ]);
 
         // listen on
-        $serv->on('connect', [$this, 'on_connect']);
-        $serv->on('receive', [$this, 'on_receive']);
-        $serv->on('finish',  [$this, 'on_finish']);
-        $serv->on('close',   [$this, 'on_close']);
-        $serv->on('task',    [$this, 'on_task']);
+        $this->serv->on('connect', [$this, 'on_connect']);
+        $this->serv->on('receive', [$this, 'on_receive']);
+        $this->serv->on('finish',  [$this, 'on_finish']);
+        $this->serv->on('close',   [$this, 'on_close']);
+        $this->serv->on('task',    [$this, 'on_task']);
 
         // start server
-        return $serv->start();
+        return $this->serv->start();
     }
 
     // ------------------------------------------------------------------------------
@@ -89,22 +93,29 @@ final class Server
      */
     public function on_receive(\swoole_server $serv, $fd, $from_id, $data)
     {
-        var_dump($fd);
-        var_dump($serv->worker_id);
+        // format passed
+        $data = str_replace(self::EOFF, '', $data);
+        $data = unserialize($data);
 
-        // call model
-        $back  = $this->_dispatch($serv, $data);
-
-        // dont send back
-        if(empty($data['return']) || $data['return'] === TRUE)
+        // check is signal for server shutdown
+        if(!empty($data['shutdown']) || !empty($data['reload']))
         {
-            $back  = serialize($back);
-            $back .= self::EOFF;
-            $serv->send($fd, $back);
+            $send = !empty($data['shutdown']) ?
+            $this->serv->shutdown() : $this->serv->reload();
+
+            $send = serialize($send).self::EOFF;
+            $ends = $this->serv->send($fd, $send);
+
+            if($ends) { $this->serv->close(); }
+            return;
         }
 
-        // close connect
-        $serv->close($fd);
+        // now post data to a task
+        $param = ['fd' => $fd, 'data' => $data];
+        $param = serialize($param).self::EOFF;
+
+        $this->serv->task($param);
+        return;
     }
 
     // ------------------------------------------------------------------------------
@@ -115,18 +126,30 @@ final class Server
      * @param  $serv
      * @param  $task_id
      * @param  $from_id
-     * @param  $data
+     * @param  $param
      * @return string
      */
-    public function on_task(\swoole_server $serv, $task_id, $from_id, $data)
+    public function on_task(\swoole_server $serv, $task_id, $from_id, $param)
     {
-        $back['taskid'] = $task_id;
-        $back['fromid'] = $from_id;
-        $back['return'] = $this->_dispatch($serv, $data);
+        $param = str_replace(self::EOFF, '', $param);
+        $param = unserialize($param);
 
-        $back  = serialize($back);
-        $back .= self::EOFF;
+        $fd    = $param['fd'];
+        $data  = $param['data'];
 
+        // call model
+        $back = $this->_dispatch($data, $fd);
+
+        // dont send back
+        if(empty($data['return']) || $data['return'] === TRUE)
+        {
+            $back  = serialize($back);
+            $back .= self::EOFF;
+            $this->serv->send($fd, $back);
+        }
+
+        // close connect
+        $this->serv->close($fd);
         return $back;
     }
 
@@ -141,6 +164,7 @@ final class Server
     public function on_connect(\swoole_server $serv, $fd)
     {
         // @TODO
+        return;
     }
 
     // ------------------------------------------------------------------------------
@@ -154,6 +178,7 @@ final class Server
     public function on_close(\swoole_server $serv, $fd)
     {
         // @TODO
+        return;
     }
 
     // ------------------------------------------------------------------------------
@@ -168,6 +193,7 @@ final class Server
     public function on_finish(\swoole_server $serv, $task_id, $data)
     {
         // @TODO
+        return;
     }
 
     // ------------------------------------------------------------------------------
@@ -175,85 +201,41 @@ final class Server
     /**
      * dispatch signal
      *
-     * @param  \swoole_server $serv
      * @param  $data
+     * @param  $fd
      * @return string
      */
-    protected function _dispatch(\swoole_server $serv, $data)
+    protected function _dispatch($data, $fd)
     {
-          // format passed
-        $back = 'FALSE';
-        $data = str_replace(self::EOFF, '', $data);
-        $data = unserialize($data);
+        $back = FALSE;
+        if(empty($data['model']) || empty($data['method'])) { return $back; }
 
-        // check is signal for server shutdown
-        if(!empty($data['shutdown']) && $data['shutdown'] === TRUE)
+        $model = $alias = $data['model'];
+
+        // Is the model in a sub-folder? If so, parse out the filename and path.
+        if (($last_slash = strrpos($alias, '/')) !== FALSE)
         {
-            return $this->_shutdown($serv);
+            $alias = substr($alias, ++$last_slash);
         }
 
-        // check is signal for workers reload
-        if(!empty($data['reload']) && $data['reload'] === TRUE)
-        {
-            return $this->_reload($serv);
-        }
+        // Is the model need set a alias name
+        $alias = !empty($data['rename']) ? $data['rename'] : $alias;
 
-        // load specify models
-        if(!empty($data['model']) && !empty($data['method']))
-        {
-            $model = $alias = $data['model'];
+        // load the model
+        $CI = &get_instance();
+        $CI->load->model($model, $alias);
 
-            // Is the model in a sub-folder? If so, parse out the filename and path.
-            if (($last_slash = strrpos($alias, '/')) !== FALSE)
-            {
-                $alias = substr($alias, ++$last_slash);
-            }
+        // call specify model
+        $back =
+        !empty($data['server']) && $data['server'] === TRUE ?
+        $CI->$alias->$data['method']($data['params'], $this->serv, $fd) :
+        $CI->$alias->$data['method']($data['params']);
 
-            // Is the model need set a alias name
-            $alias = !empty($data['rename']) ? $data['rename'] : $alias;
-
-            // load the model
-            $CI = &get_instance();
-            $CI->load->model($model, $alias);
-
-            // call specify model
-            $back =
-            !empty($data['server']) && $data['server'] === TRUE ?
-            $CI->$alias->$data['method']($data['params'], $serv) :
-            $CI->$alias->$data['method']($data['params']);
-
-            // destroy obj
-            $CI->db->close();
-            unset($CI);
-        }
+        // destroy obj
+        $CI->db->close();
+        unset($CI);
 
         return $back;
-    }
-
-    // ------------------------------------------------------------------------------
-
-    /**
-     * stop swoole server
-     *
-     * @param  \swoole_server $serv
-     * @return mixed
-     */
-    protected function _shutdown(\swoole_server $serv)
-    {
-        return $serv->shutdown();
-    }
-
-    // ------------------------------------------------------------------------------
-
-    /**
-     * reload swoole server
-     *
-     * @param  \swoole_server $serv
-     * @return mixed
-     */
-    protected function _reload(\swoole_server $serv)
-    {
-        return $serv->reload();
     }
 
     // ------------------------------------------------------------------------------
