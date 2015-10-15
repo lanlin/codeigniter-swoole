@@ -25,6 +25,7 @@ class Swoole extends CI_Controller
         parent::__construct();
 
         if(!is_cli()) { return; }
+        $this->db->close();
     }
 
     // ------------------------------------------------------------------------------

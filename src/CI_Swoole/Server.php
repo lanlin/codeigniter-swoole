@@ -24,10 +24,6 @@ final class Server
 
     // ------------------------------------------------------------------------------
 
-    private $serv;
-
-    // ------------------------------------------------------------------------------
-
     /**
      * check is cli
      *
@@ -47,19 +43,23 @@ final class Server
      */
     public function start()
     {
+        // very begaining close db
+        $CI = &get_instance();
+        $CI->db->close();
+
         // new swoole server
-        $this->serv = new \swoole_server(
+        $serv = new \swoole_server(
             self::HOST,     self::PORT,
             SWOOLE_PROCESS, SWOOLE_SOCK_TCP
         );
 
         // init config
-        $this->serv->set(
+        $serv->set(
         [
             'max_conn'        => 256,         // max connection number
-            'worker_num'      => 1,           // set workers
+            'worker_num'      => 4,           // set workers
             'dispatch_mode'   => 3,           // post to a free worker
-            'task_worker_num' => 1,           // worker numbers for task
+            'task_worker_num' => 4,           // worker numbers for task
 
             'daemonize'      => TRUE,         // using as daemonize?
             'open_eof_check' => TRUE,
@@ -71,14 +71,14 @@ final class Server
         ]);
 
         // listen on
-        $this->serv->on('connect', [$this, 'on_connect']);
-        $this->serv->on('receive', [$this, 'on_receive']);
-        $this->serv->on('finish',  [$this, 'on_finish']);
-        $this->serv->on('close',   [$this, 'on_close']);
-        $this->serv->on('task',    [$this, 'on_task']);
+        $serv->on('connect', [$this, 'on_connect']);
+        $serv->on('receive', [$this, 'on_receive']);
+        $serv->on('finish',  [$this, 'on_finish']);
+        $serv->on('close',   [$this, 'on_close']);
+        $serv->on('task',    [$this, 'on_task']);
 
         // start server
-        return $this->serv->start();
+        return $serv->start();
     }
 
     // ------------------------------------------------------------------------------
@@ -101,13 +101,13 @@ final class Server
         if(!empty($data['shutdown']) || !empty($data['reload']))
         {
             $send = !empty($data['shutdown']) ?
-            $this->serv->shutdown() : $this->serv->reload();
+            $serv->shutdown() : $serv->reload();
 
             $send  = serialize($send);
             $send .= self::EOFF;
-            $ends  = $this->serv->send($fd, $send);
+            $ends  = $serv->send($fd, $send);
 
-            if($ends) { $this->serv->close(); }
+            if($ends) { $serv->close($fd); }
             return;
         }
 
@@ -116,7 +116,11 @@ final class Server
         $param  = serialize($param);
         $param .= self::EOFF;
 
-        $this->serv->task($param);
+        // task post
+        // $serv->task($param);
+
+        // worker direct
+        $this->on_task($serv, NULL, NULL, $param);
         return;
     }
 
@@ -140,18 +144,18 @@ final class Server
         $data  = $param['data'];
 
         // call model
-        $back = $this->_dispatch($data, $fd);
+        $back = $this->_dispatch($data, $serv, $fd);
 
         // dont send back
         if(empty($data['return']) || $data['return'] === TRUE)
         {
             $back  = serialize($back);
             $back .= self::EOFF;
-            $this->serv->send($fd, $back);
+            $serv->send($fd, $back);
         }
 
         // close connect
-        $this->serv->close($fd);
+        $serv->close($fd);
         return $back;
     }
 
@@ -195,6 +199,8 @@ final class Server
     public function on_finish(\swoole_server $serv, $task_id, $data)
     {
         // @TODO
+        echo "Task {$task_id} finish\n";
+        echo "Result: {$data}\n";
         return;
     }
 
@@ -204,10 +210,11 @@ final class Server
      * dispatch signal
      *
      * @param  $data
+     * @param  $serv
      * @param  $fd
      * @return string
      */
-    protected function _dispatch($data, $fd)
+    protected function _dispatch($data, $serv, $fd)
     {
         $back = FALSE;
         if(empty($data['model']) || empty($data['method'])) { return $back; }
@@ -225,18 +232,18 @@ final class Server
 
         // load the model
         $CI = &get_instance();
+        $CI->db->close();
         $CI->load->model($model, $alias);
 
         // call specify model
         $back =
         !empty($data['server']) && $data['server'] === TRUE ?
-        $CI->$alias->$data['method']($data['params'], $this->serv, $fd) :
+        $CI->$alias->$data['method']($data['params'], $serv, $fd) :
         $CI->$alias->$data['method']($data['params']);
 
         // destroy obj
         $CI->db->close();
         unset($CI);
-
         return $back;
     }
 
