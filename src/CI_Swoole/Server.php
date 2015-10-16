@@ -111,6 +111,15 @@ final class Server
             return;
         }
 
+        // dont send back
+        if(!empty($data['return']) && $data['return'] === FALSE)
+        {
+            $back  = serialize(TRUE);
+            $back .= self::EOFF;
+            $serv->send($fd, $back);
+            $serv->close($fd);
+        }
+
         // now post data to a task
         $param  = ['fd' => $fd, 'data' => $data];
         $param  = serialize($param);
