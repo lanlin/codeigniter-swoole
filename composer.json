@@ -2,10 +2,10 @@
     "name": "lanlin/codeigniter-swoole",
     "keywords": ["Swoole Codeigniter Combind"],
     "description": "Simple package for use swoole under codeigniter.",
-    "suggests": "Using this package within CodeIgniter 3",
+    "suggests": "Using this package within CodeIgniter 3.0+ and Swoole 1.17.17+",
     "license": "MIT",
     "authors": [ { "name": "Lanlin", "email": "lanlin1987@gmail.com" } ],
-    "minimum-stability": "1.0.8",
+    "minimum-stability": "stable",
     "require": { "php": ">=5.4.0" },
     "autoload":
     {
