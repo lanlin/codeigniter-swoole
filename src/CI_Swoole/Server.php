@@ -32,6 +32,9 @@ final class Server
     public function __construct()
     {
         if(!is_cli()) { return; }
+
+        unset($CI);
+        set_time_limit(0);
     }
 
     // ------------------------------------------------------------------------------
@@ -43,11 +46,6 @@ final class Server
      */
     public function start()
     {
-        // very begaining close db
-        $CI = &get_instance();
-        $CI->db->close();
-
-        // new swoole server
         $serv = new \swoole_server(
             self::HOST,     self::PORT,
             SWOOLE_PROCESS, SWOOLE_SOCK_TCP
@@ -78,7 +76,7 @@ final class Server
         $serv->on('task',    [$this, 'on_task']);
 
         // start server
-        return $serv->start();
+        $serv->start();
     }
 
     // ------------------------------------------------------------------------------
@@ -94,6 +92,7 @@ final class Server
     public function on_receive(\swoole_server $serv, $fd, $from_id, $data)
     {
         // format passed
+        unset($CI);
         $data = str_replace(self::EOFF, '', $data);
         $data = unserialize($data);
 
@@ -125,9 +124,6 @@ final class Server
         $param  = serialize($param);
         $param .= self::EOFF;
 
-        // task post
-        // $serv->task($param);
-
         // worker direct
         $this->on_task($serv, NULL, NULL, $param);
         return;
@@ -146,6 +142,7 @@ final class Server
      */
     public function on_task(\swoole_server $serv, $task_id, $from_id, $param)
     {
+        unset($CI);
         $param = str_replace(self::EOFF, '', $param);
         $param = unserialize($param);
 
@@ -165,6 +162,10 @@ final class Server
 
         // close connect
         $serv->close($fd);
+
+        // waite for process end
+        while( @\swoole_process::wait() );
+
         return $back;
     }
 

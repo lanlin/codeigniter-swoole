@@ -83,7 +83,7 @@ class Client
         // receiv data
         if(isset($issend) && $issend)
         {
-            $return = $client->recv();
+            $return = @$client->recv();
             $return = str_replace(self::EOFF, '', $return);
             $return = unserialize($return);
         }
