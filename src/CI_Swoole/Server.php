@@ -11,7 +11,7 @@
  * then waite for connection from client.
  *
  * @author  lanlin
- * @change  2015-10-09
+ * @change  2016-01-15
  */
 final class Server
 {
@@ -32,8 +32,6 @@ final class Server
     public function __construct()
     {
         if(!is_cli()) { return; }
-
-        unset($CI);
         set_time_limit(0);
     }
 
@@ -92,13 +90,15 @@ final class Server
     public function on_receive(\swoole_server $serv, $fd, $from_id, $data)
     {
         // format passed
-        unset($CI);
         $data = str_replace(self::EOFF, '', $data);
         $data = unserialize($data);
 
         // check is signal for server shutdown
         if(!empty($data['shutdown']) || !empty($data['reload']))
         {
+            // try to clear timers
+            $this->__clear_timer();
+
             $send = !empty($data['shutdown']) ?
             $serv->shutdown() : $serv->reload();
 
@@ -142,7 +142,6 @@ final class Server
      */
     public function on_task(\swoole_server $serv, $task_id, $from_id, $param)
     {
-        unset($CI);
         $param = str_replace(self::EOFF, '', $param);
         $param = unserialize($param);
 
@@ -208,9 +207,9 @@ final class Server
      */
     public function on_finish(\swoole_server $serv, $task_id, $data)
     {
-        // @TODO
         echo "Task {$task_id} finish\n";
-        echo "Result: {$data}\n";
+
+        $serv->reload();
         return;
     }
 
@@ -242,7 +241,9 @@ final class Server
 
         // load the model
         $CI = &get_instance();
-        $CI->db->close();
+
+        // my permission model, only for me
+        $CI->load->model('permission/permission_model', 'perm');
         $CI->load->model($model, $alias);
 
         // call specify model
@@ -251,10 +252,24 @@ final class Server
         $CI->$alias->$data['method']($data['params'], $serv, $fd) :
         $CI->$alias->$data['method']($data['params']);
 
-        // destroy obj
-        $CI->db->close();
         unset($CI);
         return $back;
+    }
+
+    // ------------------------------------------------------------------------------
+
+    /**
+     * maybe we can clear timers here
+     */
+    private function __clear_timer()
+    {
+        $tmid = 0;
+
+        while($tmid < 5)
+        {
+            @swoole_timer_clear($tmid);
+            $tmid++;
+        }
     }
 
     // ------------------------------------------------------------------------------

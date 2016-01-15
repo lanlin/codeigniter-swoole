@@ -11,7 +11,7 @@
  * then excute code that may need a long time runing.
  *
  * @author  lanlin
- * @change  2015-10-08
+ * @change  2016-01-15
  */
 class Client
 {
@@ -64,10 +64,10 @@ class Client
         ]);
 
         // listen on
-        $client->on('connect', 'static::on_connect');
-        $client->on('receive', 'static::on_receive');
-        $client->on('error',   'static::on_error');
-        $client->on('close',   'static::on_close');
+        $client->on('connect', '\CI_Swoole\Client::on_connect');
+        $client->on('receive', '\CI_Swoole\Client::on_receive');
+        $client->on('error',   '\CI_Swoole\Client::on_error');
+        $client->on('close',   '\CI_Swoole\Client::on_close');
 
         // connect
         $client->connect(self::HOST, self::PORT, 10);

@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------
  *
  * @author  lanlin
- * @change  2015-10-08
+ * @change  2016-01-15
  */
 class Swoole extends CI_Controller
 {
@@ -25,7 +25,6 @@ class Swoole extends CI_Controller
         parent::__construct();
 
         if(!is_cli()) { return; }
-        $this->db->close();
     }
 
     // ------------------------------------------------------------------------------
@@ -73,6 +72,48 @@ class Swoole extends CI_Controller
 
         $reload = \CI_Swoole\Client::client();
         echo "Reload Workers: {$reload}\n";
+    }
+
+    // ------------------------------------------------------------------------------
+
+    /**
+     * start timer for all task
+     */
+    public function timer()
+    {
+        \CI_Swoole\Client::$post =
+        [
+            'return' => TRUE,
+            'server' => TRUE,
+            'params' => [],
+            'method' => 'plan',
+            'rename' => 'tsk',
+            'model'  => 'task/Plan_model'
+        ];
+
+        \CI_Swoole\Client::client();
+        echo "Set Timer Start.\n";
+    }
+
+    // ------------------------------------------------------------------------------
+
+    /**
+     * start email sync quene
+     */
+    public function email_quene()
+    {
+        \CI_Swoole\Client::$post =
+        [
+            'return' => FALSE,
+            'server' => TRUE,
+            'params' => [],
+            'method' => 'sync_quene',
+            'rename' => 'eqn',
+            'model'  => 'contact/email_quene_model'
+        ];
+
+        \CI_Swoole\Client::client();
+        echo "Email Quene Start.\n";
     }
 
     // ------------------------------------------------------------------------------
