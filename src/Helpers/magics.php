@@ -36,7 +36,7 @@ function ____intercepter____()
     {
         if (!is_cli()) { return; }
 
-        $command = trim($argv[1] ?? '', '/');
+        $command = trim($_SERVER['argv'][1] ?? '', '/');
 
         switch ($command)
         {
