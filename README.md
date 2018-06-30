@@ -42,6 +42,15 @@ The `route` is used for find which method to be call as a task, and `params` is 
 So, that's all of it!
 
 
+## A little more
+
+The step 2 copied files were config files for this adapter.
+
+`swoole.php` file can set host, port, log file and so on.
+
+`timers.php` file can set some timer methods for swoole server, these timers will be started once the server inited.
+
+
 ## Server CLI Commands
 
 ```shell
