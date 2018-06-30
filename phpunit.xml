@@ -1,0 +1,26 @@
+<phpunit
+  backupGlobals="true"
+  backupStaticAttributes="false"
+  bootstrap="./TestHelper.php"
+  cacheTokens="false"
+  colors="false"
+  convertErrorsToExceptions="true"
+  convertNoticesToExceptions="true"
+  convertWarningsToExceptions="true"
+  forceCoversAnnotation="false"
+  processIsolation="false"
+  stopOnError="false"
+  stopOnFailure="false"
+  stopOnIncomplete="false"
+  stopOnSkipped="false"
+  stopOnRisky="false"
+  timeoutForSmallTests="1"
+  timeoutForMediumTests="10"
+  timeoutForLargeTests="60"
+  verbose="false">
+  <testsuites>
+    <testsuite name="Codeigniter Swoole Test Suite">
+      <directory suffix="Test.php">./tests</directory>
+    </testsuite>
+  </testsuites>
+</phpunit>

@@ -1,51 +1,63 @@
-# CodeIgniter-Swoole
 
-CodeIgniter-Swoole (You need using it within CodeIgniter)
+## Codeigniter Swoole Adapter
 
-This simple package is combind with CodeIgniter.
+This adapter would make it easy to using swoole within Codeigniter framework.
 
-So that we can use Swoole in a single CI framework.
+With this adapter, you can start a task(CLI) any where(FPM) you want from your code.
 
-Normally we only want to start a single server side in CLI,
+That's means you can start a CLI task from a FPM process.
 
-but connect with multi client side. codeigniter-swoole is the one.
 
-Detail useage see the demo directory, if you formiliar with CI.
- 
-# Useage
+## Install
 
-Please view the code in demo directory. 
+```shell
+composer require lanlin/codeigniter-swoole
+```
 
-The [b]"Swoole.php"[/b] controller
 
-file you must copy into your 
+## How to
 
-[b]"codeigniter/application/controllers/Swoole.php"[/b]
+1. first, of course you must install `codeigniter-swoole` in your codeigniter project.
+2. (this step is option) copy these two config files `swoole.php` and `timers.php` from `src/Helper` to your `application/config` folder.
+3. start swoole server `php index.php swoole/server/start`
+4. you can use `\CiSwoole\Core\Client::send($data)` to start a task now!
+5. there's no step 5.
 
-Use this package, you can run your CI with nginx, and same time run CI
- 
-in CLI. So, you can call the CI run in CLI through fpm, post data to it,
-  
-make a long run time possible.  
 
-# Require
+## What is a task?
+A task is just a method of your codeigniter controlloer, so almost any controller method can be used as a task.
 
-Before start the server side, you should make sure has swoole installed
+Let's see the code
 
-aready, and of course CI required.
+```php
+\CiSwoole\Core\Client::send(
+[
+    'route'  => 'your/route/uri/to/a/method'
+    'params' => ['test' => 666]
+]);
+```
 
-# Command
+The `route` is used for find which method to be call as a task, and `params` is the parameters array that you may want to pass to the task.
 
-#------------------------------------------------------------------------------
+So, that's all of it!
 
-CLI Command:> cd "to your ci root directory"
 
-CLI Command:> php index.php swoole start      // start server from swoole.php
+## Server CLI Commands
 
-CLI Command:> php index.php swoole stop       // stop server
+```shell
 
-CLI Command:> php index.php swoole reload     // reload all workers
+// start the swoole server
+php index.php swoole/server/start
 
-#------------------------------------------------------------------------------
+// stop the swoole server
+php index.php swoole/server/stop
 
-That's all, @end, sorry about my english.
+// reload all wokers of swoole server
+php index.php swoole/server/reload
+
+```
+
+
+## License
+
+This project is licensed under the MIT license.

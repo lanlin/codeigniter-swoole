@@ -1,14 +1,29 @@
 {
     "name": "lanlin/codeigniter-swoole",
-    "keywords": ["Swoole Codeigniter Combind"],
-    "description": "Simple package for use swoole under codeigniter.",
-    "suggests": "Using this package within CodeIgniter 3.0+ and Swoole 1.17.17+",
+    "type": "library",
+    "description": "A swoole adapter for Codeigniter 3.0+",
+    "keywords": ["Swoole", "Codeigniter", "Adapter", "Long Run", "Timers", "PHP", "Task"],
+    "homepage": "https://github.com/lanlin/codeigniter-swoole",
+    "suggests": "Using this adapter within CodeIgniter 3.0+ and Swoole 2.0.0+, PHP 7.0+ would be better.",
     "license": "MIT",
-    "authors": [ { "name": "Lanlin", "email": "lanlin1987@gmail.com" } ],
-    "minimum-stability": "stable",
-    "require": { "php": ">=5.4.0" },
-    "autoload":
-    {
-        "psr-0": { "CI_Swoole\\": "src/" }
+    "authors" : [
+        {
+            "name": "lanlin",
+            "email": "lanlin1987@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.6",
+        "ext-swoole": "^2.0.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.2"
+    },
+    "autoload": {
+        "files": [ "src/Helpers/magics.php" ],
+        "psr-4": {
+            "CiSwoole\\": "src/",
+            "CiSwooleTests\\": "tests/"
+        }
     }
 }
