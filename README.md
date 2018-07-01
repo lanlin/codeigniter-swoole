@@ -1,7 +1,11 @@
 
 ## Codeigniter Swoole Adapter
 
-This adapter would make it easy to using swoole within Codeigniter framework.
+You want long-run task? timers? FPM to CLI? Code reusing in both FPM & CLI mode?
+
+"It's so easy!"
+
+This adapter would make it so easy to using swoole within Codeigniter framework.
 
 With this adapter, you can start a task(CLI) any where(FPM) you want from your code.
 
@@ -17,7 +21,7 @@ composer require lanlin/codeigniter-swoole
 
 ## How to
 
-1. first, of course you must install `codeigniter-swoole` in your codeigniter project.
+1. first, of course you must install `codeigniter-swoole` to your codeigniter project.
 2. (this step is option) copy these two config files `swoole.php` and `timers.php` from `src/Helper` to your `application/config` folder.
 3. start swoole server `php index.php swoole/server/start`
 4. you can use `\CiSwoole\Core\Client::send($data)` to start a task now!
@@ -42,15 +46,6 @@ The `route` is used for find which method to be call as a task, and `params` is 
 So, that's all of it!
 
 
-## A little more
-
-The step 2 copied files were config files for this adapter.
-
-`swoole.php` file can set host, port, log file and so on.
-
-`timers.php` file can set some timer methods for swoole server, these timers will be started once the server inited.
-
-
 ## Server CLI Commands
 
 ```shell
@@ -64,6 +59,76 @@ php index.php swoole/server/stop
 // reload all wokers of swoole server
 php index.php swoole/server/reload
 
+```
+
+
+## A little more
+
+The step 2 copied files were config files for this adapter.
+
+`swoole.php` file can set host, port, log file and so on.
+
+`timers.php` file can set some timer methods for swoole server, these timers will be started once the server inited.
+
+You can copy `tests/application` to your `application` for testing. The demos are same as below shows.
+
+
+```php
+class Test extends CI_Controller
+{
+
+    // ------------------------------------------------------------------------------
+
+    /**
+     * here's the task 'tests/test/task'
+     */
+    public function task()
+    {
+	      $data = $this->input->post();     // as you see, params worked like normally post data
+
+        log_message('info', var_export($data, true));
+    }
+
+    // ------------------------------------------------------------------------------
+
+    /**
+     * here's the timer method
+     *
+     * you should copay timers.php to your config folder,
+     * then add $timers['tests/test/task_timer'] = 10000; and start the swoole server.
+     *
+     * this method would be called every 10 seconds per time.
+     */
+    public function task_timer()
+    {
+        log_message('info', 'timer works!');
+    }
+
+    // ------------------------------------------------------------------------------
+
+    /**
+     * send data to task
+     */
+    public function send()
+    {
+        try
+        {
+            \CiSwoole\Core\Client::send(
+            [
+                'route'  => 'tests/test/task',
+                'params' => ['hope' => 'it works!'],
+            ]);
+        }
+        catch (\Exception $e)
+        {
+            log_message('error', $e->getMessage());
+            log_message('error', $e->getTraceAsString());
+        }
+    }
+
+    // ------------------------------------------------------------------------------
+
+}
 ```
 
 

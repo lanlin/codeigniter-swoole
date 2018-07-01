@@ -193,15 +193,15 @@ class Server
     {
         try
         {
-            $argv =
+            $_SERVER['argv'] =
             [
-                0 => SELF['basename'],
+                0 => SELF,
                 1 => $data['route'],
             ];
 
             $_POST = $data['params'] ?? [];
 
-            require FCPATH . SELF['basename'];
+            getCiSwooleConfig('starter');
         }
 
         catch (\Throwable $e) { self::logs($e); }
