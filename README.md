@@ -84,7 +84,7 @@ class Test extends CI_Controller
      */
     public function task()
     {
-	      $data = $this->input->post();     // as you see, params worked like normally post data
+        $data = $this->input->post();     // as you see, params worked like normally post data
 
         log_message('info', var_export($data, true));
     }
