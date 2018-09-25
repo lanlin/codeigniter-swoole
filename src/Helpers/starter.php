@@ -4,7 +4,7 @@
  *
  * @link https://github.com/bcit-ci/CodeIgniter/blob/develop/system/core/CodeIgniter.php
  * @since Version 3.2.0
- * @change 2018/09/12
+ * @change 2018/09/25
  */
 
 
@@ -65,7 +65,7 @@
 	ini_set('default_charset', $charset);
 	if (extension_loaded('mbstring'))
     {
-        define('MB_ENABLED', TRUE);
+        !defined('MB_ENABLED') AND define('MB_ENABLED', TRUE);
         // mbstring.internal_encoding is deprecated starting with PHP 5.6
         // and it's usage triggers E_DEPRECATED messages.
         @ini_set('mbstring.internal_encoding', $charset);
@@ -75,20 +75,20 @@
     }
     else
     {
-        define('MB_ENABLED', FALSE);
+        !defined('MB_ENABLED') AND define('MB_ENABLED', FALSE);
     }
 	// There's an ICONV_IMPL constant, but the PHP manual says that using
 	// iconv's predefined constants is "strongly discouraged".
 	if (extension_loaded('iconv'))
     {
-        define('ICONV_ENABLED', TRUE);
+        !defined('ICONV_ENABLED') AND define('ICONV_ENABLED', TRUE);
         // iconv.internal_encoding is deprecated starting with PHP 5.6
         // and it's usage triggers E_DEPRECATED messages.
         @ini_set('iconv.internal_encoding', $charset);
     }
     else
     {
-        define('ICONV_ENABLED', FALSE);
+        !defined('ICONV_ENABLED') AND define('ICONV_ENABLED', FALSE);
     }
 	if (is_php('5.6'))
     {
@@ -169,19 +169,19 @@
 	 *
 	 * @return CI_Controller
 	 */
-	 if (! function_exists('get_instance'))
+	 if (! function_exists('get_instance'))   // check
      {
          function &get_instance()
          {
              return CI_Controller::get_instance();
          }
      }
-	if (file_exists(APPPATH.'core/'.$CFG->config['subclass_prefix'].'Controller.php'))
-	{
-		require_once APPPATH.'core/'.$CFG->config['subclass_prefix'].'Controller.php';
-	}
-	// Set a mark point for benchmarking
-	$BM->mark('loading_time:_base_classes_end');
+	 if (file_exists(APPPATH.'core/'.$CFG->config['subclass_prefix'].'Controller.php'))
+	 {
+	 	require_once APPPATH.'core/'.$CFG->config['subclass_prefix'].'Controller.php';
+	 }
+	 // Set a mark point for benchmarking
+	 $BM->mark('loading_time:_base_classes_end');
 /*
  * ------------------------------------------------------
  *  Sanity checks

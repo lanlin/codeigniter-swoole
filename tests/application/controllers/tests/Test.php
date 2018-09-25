@@ -5,8 +5,10 @@
  * Test Client & Task
  * ----------------------------------------------------------------------------------
  *
+ * Tips: you must enable logs at config.php first before use log_message()
+ *
  * @author lanlin
- * @change 2018/07/01
+ * @change 2018/09/25
  */
 class Test extends CI_Controller
 {
@@ -20,7 +22,7 @@ class Test extends CI_Controller
 	{
 	    $data = $this->input->post();
 
-        log_message('info', var_export($data, true));
+        log_message('error', var_export($data, true));
 	}
 
     // ------------------------------------------------------------------------------
@@ -30,7 +32,7 @@ class Test extends CI_Controller
      */
     public function task_timer()
     {
-        log_message('info', 'timer works!');
+        log_message('error', 'timer works!');
     }
 
     // ------------------------------------------------------------------------------

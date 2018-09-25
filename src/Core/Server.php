@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------
  *
  * @author lanlin
- * @change 2018/06/30
+ * @change 2018/09/25
  */
 class Server
 {
@@ -205,7 +205,15 @@ class Server
         }
 
         catch (\Throwable $e) { self::logs($e); }
-        finally { \Swoole\Process::kill(getmypid()); }
+
+        // ignore...
+        // finally
+        // {
+        //     register_shutdown_function(function()
+        //     {
+        //         \Swoole\Process::kill(getmypid());
+        //     });
+        // }
     }
 
     // ------------------------------------------------------------------------------
