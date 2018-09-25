@@ -204,16 +204,9 @@ class Server
             getCiSwooleConfig('starter');
         }
 
+        // kill process
         catch (\Throwable $e) { self::logs($e); }
-
-        // ignore...
-        // finally
-        // {
-        //     register_shutdown_function(function()
-        //     {
-        //         \Swoole\Process::kill(getmypid());
-        //     });
-        // }
+        finally { \Swoole\Process::kill(getmypid()); }
     }
 
     // ------------------------------------------------------------------------------
