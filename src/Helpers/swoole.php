@@ -8,14 +8,21 @@
 | For custom configuration, you can copy this swoole.php to
 | the application/config folder.
 |
+| Example for tcp:
+| $swoole['server_type'] = SWOOLE_SOCK_TCP;
+| $swoole['server_host'] = '127.0.0.1';
+| $swoole['server_port'] = 9501;
+|
 | Warning:
 |    Do not change any configuration, unless you know what it is!
 |
 | For more detail document, view this link below
 | @link https://www.swoole.co.uk/docs/modules/swoole-server-doc
+| @link https://wiki.swoole.com/wiki/page/476.html
 */
-$swoole['server_host'] = '127.0.0.1';
-$swoole['server_port'] = 9501;
+$swoole['server_type'] = SWOOLE_SOCK_UNIX_STREAM;
+$swoole['server_host'] = '/var/run/swoole.sock';
+$swoole['server_port'] = null;
 
 
 /*

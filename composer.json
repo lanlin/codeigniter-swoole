@@ -17,7 +17,8 @@
         "ext-swoole": "^4.0.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^7.2"
+        "phpunit/phpunit": "^8.2",
+        "swoole/ide-helper": "@dev"
     },
     "autoload": {
         "files": [ "src/Helpers/magics.php" ],

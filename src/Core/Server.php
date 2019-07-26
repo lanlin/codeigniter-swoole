@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------
  *
  * @author lanlin
- * @change 2018/09/25
+ * @change 2019/07/26
  */
 class Server
 {
@@ -22,6 +22,7 @@ class Server
     [
         'server_port' => null,
         'server_host' => '/var/run/swoole.sock',
+        'server_type' => SWOOLE_SOCK_UNIX_STREAM,
         'debug_file'  => APPPATH . 'logs/swoole_debug.log',
     ];
 
@@ -59,7 +60,7 @@ class Server
             self::$cfgs['server_host'],
             self::$cfgs['server_port'],
             SWOOLE_PROCESS,
-            SWOOLE_UNIX_STREAM
+            self::$cfgs['server_type']
         );
 
         // init config
@@ -263,8 +264,12 @@ class Server
         self::$cfgs['debug_file']  = $config['debug_file'];
         self::$cfgs['server_host'] = $config['server_host'];
         self::$cfgs['server_port'] = $config['server_port'];
+        self::$cfgs['server_type'] = $config['server_type'];
 
-        unset($config['debug_file'], $config['server_host'], $config['server_port']);
+        unset(
+            $config['debug_file'], $config['server_host'],
+            $config['server_port'], $config['server_type'],
+        );
 
         self::$config = array_merge($config, self::$config);
     }

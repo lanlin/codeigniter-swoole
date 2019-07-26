@@ -6,7 +6,7 @@
  * ------------------------------------------------------------------------------------
  *
  * @author  lanlin
- * @change  2018/06/30
+ * @change  2019/07/26
  */
 class Client
 {
@@ -25,6 +25,7 @@ class Client
         'package_eof' => '☯',         // \u262F
         'server_port' => null,
         'server_host' => '/var/run/swoole.sock',
+        'server_type' => SWOOLE_SOCK_UNIX_STREAM,
         'debug_file'  => APPPATH . 'logs/swoole_debug.log',
     ];
 
@@ -50,7 +51,7 @@ class Client
         /**
          * @property array $stamsel
          */
-        $client = new \Swoole\Client(SWOOLE_UNIX_STREAM, $mode);
+        $client = new \Swoole\Client(self::$config['server_type'], $mode);
 
         // dynamic custom data
         $client->CiSwooleData = $data;
