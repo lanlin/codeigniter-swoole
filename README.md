@@ -135,3 +135,6 @@ class Test extends CI_Controller
 ## License
 
 This project is licensed under the MIT license.
+
+## 补充说明
+[codeigniter-swoole 的主要应用场景](https://github.com/lanlin/codeigniter-swoole/issues/4)
